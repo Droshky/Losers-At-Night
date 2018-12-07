@@ -27,7 +27,7 @@ object_list = pygame.sprite.Group()
 
 def is_collided_with(sprite):
     for wall in walls:
-        if wall.colliderect(sprite.rect):
+        if wall.colliderect(sprite):
             return True
 
 class Player:
@@ -58,7 +58,7 @@ class Player:
     def handle_keys(self):  # checks which key is pressed for movement.
         key = pygame.key.get_pressed()
         if key[pygame.K_a]:  # key A, moves west/-x
-            if self.rect.collidepoint(self.x, self.y):
+            if is_collided_with(self.rect):
                 self.x = self.x
             else:
                 self.x -= self.vel
@@ -66,23 +66,31 @@ class Player:
                 self.dir = 'west'
                 self.is_walking = True
         elif key[pygame.K_d]:  # key D, moves east/+x
-            self.x += self.vel
-            self.rect.move_ip(self.vel, 0)
-            self.dir = 'east'
-            self.is_walking = True
+            if is_collided_with(self.rect):
+                self.x = self.x
+            else:
+                self.x += self.vel
+                self.rect.move_ip(self.vel, 0)
+                self.dir = 'east'
+                self.is_walking = True
         elif key[pygame.K_w]:  # key W, moves north/+y (for pygame its actually -y because of positioning, but whatever)
-            self.y -= self.vel
-            self.rect.move_ip(0, -self.vel)
-            self.dir = 'north'
-            self.is_walking = True
+            if is_collided_with(self.rect):
+                self.y = self.y
+            else:
+                self.y -= self.vel
+                self.rect.move_ip(0, -self.vel)
+                self.dir = 'north'
+                self.is_walking = True
         elif key[pygame.K_s]:  # key S, moves south/ -y (same at W)
-            self.y += self.vel
-            self.rect.move_ip(0, self.vel)
-            self.dir = 'south'
-            self.is_walking = True
+            if is_collided_with(self.rect):
+                self.y = self.y
+            else:
+                self.y += self.vel
+                self.rect.move_ip(0, self.vel)
+                self.dir = 'south'
+                self.is_walking = True
         else:
             self.is_walking = False
-        print(self.rect)
 
     def animation(self, rotation):
         if self.steps > len(self.animg) - 1:
@@ -95,7 +103,6 @@ class Player:
         self.n_img = None
         if self.is_walking == True:
             self.steps += 1
-
             if self.dir == 'north':
                 self.animation(0)
             elif self.dir == 'south':
@@ -121,16 +128,15 @@ class Player:
 
 
 class Wall:
-
     def __init__(self, pos):
-        walls.append(self)
         self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
+        walls.append(self.rect)
 
 
 walls = []
 player = Player()
 running = True
-
+print(walls)
 level = [
 "                                    W",
 "                W                   W",
@@ -174,7 +180,7 @@ while running:
     player.char_action()
 
     for wall in walls:
-        pygame.draw.rect(screen, (255, 255, 255), wall.rect)
+        pygame.draw.rect(screen, (255, 255, 255), wall)
         pygame.draw.rect(screen, (255, 0, 0), end_rect)
 
     if player.rect.colliderect(end_rect):
