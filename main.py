@@ -25,6 +25,10 @@ clock = pygame.time.Clock()
 
 object_list = pygame.sprite.Group()
 
+def is_collided_with(sprite):
+    for wall in walls:
+        if wall.colliderect(sprite.rect):
+            return True
 
 class Player:
     def __init__(self):
@@ -49,40 +53,37 @@ class Player:
         self.dir = ''  # direction of character (starts as nothing, moves to north, east, south, or west).
         self.is_walking = False
         self.steps = 0
+        pygame.draw.rect(screen, (0, 0, 0), self.rect)
 
     def handle_keys(self):  # checks which key is pressed for movement.
         key = pygame.key.get_pressed()
-
         if key[pygame.K_a]:  # key A, moves west/-x
-            self.x -= self.vel
-            self.dir = 'west'
-            self.is_walking = True
+            if self.rect.collidepoint(self.x, self.y):
+                self.x = self.x
+            else:
+                self.x -= self.vel
+                self.rect.move_ip(-self.vel, 0)
+                self.dir = 'west'
+                self.is_walking = True
         elif key[pygame.K_d]:  # key D, moves east/+x
             self.x += self.vel
+            self.rect.move_ip(self.vel, 0)
             self.dir = 'east'
             self.is_walking = True
         elif key[pygame.K_w]:  # key W, moves north/+y (for pygame its actually -y because of positioning, but whatever)
             self.y -= self.vel
+            self.rect.move_ip(0, -self.vel)
             self.dir = 'north'
             self.is_walking = True
         elif key[pygame.K_s]:  # key S, moves south/ -y (same at W)
             self.y += self.vel
+            self.rect.move_ip(0, self.vel)
             self.dir = 'south'
             self.is_walking = True
         else:
             self.is_walking = False
+        print(self.rect)
 
-            # If you collide with a wall, move out based on velocity
-        for wall in walls:
-            if self.rect.colliderect(wall.rect):
-                if dx > 0:  # Moving right; Hit the left side of the wall
-                    self.rect.right = wall.rect.left
-                if dx < 0:  # Moving left; Hit the right side of the wall
-                    self.rect.left = wall.rect.right
-                if dy > 0:  # Moving down; Hit the top side of the wall
-                    self.rect.bottom = wall.rect.top
-                if dy < 0:  # Moving up; Hit the bottom side of the wall
-                    self.rect.top = wall.rect.bottom
     def animation(self, rotation):
         if self.steps > len(self.animg) - 1:
             self.steps = 0
@@ -90,6 +91,7 @@ class Player:
         screen.blit(self.step_ani, (self.x, self.y))
 
     def draw(self, surface):
+        pygame.draw.rect(screen, (0, 0, 128), self.rect)
         self.n_img = None
         if self.is_walking == True:
             self.steps += 1
@@ -130,25 +132,24 @@ player = Player()
 running = True
 
 level = [
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                                    W",
-"W                         E          W",
-"W                                    W",
-"W                                    W",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"                                    W",
+"                W                   W",
+"                W                   W",
+"                W                   W",
+"                W                   W",
+"                                    W",
+"                                    W",
+"                                    W",
+"                                    W",
+"                                    W",
+"                                    W",
+"                                    W",
+"                                    W",
+"                                    W",
+"                         E          W",
+"                                    W",
+"                                    W",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 ]
 
 x = y = 0
