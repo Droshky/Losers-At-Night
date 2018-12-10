@@ -1,11 +1,11 @@
 import pygame
 
 pygame.init()
-screen = pygame.display.set_mode((600, 600))  # choose a better size later
+screen = pygame.display.set_mode((800, 600))  # choose a better size later
 clock = pygame.time.Clock()
 pygame.font.init()
 myfont = pygame.font.SysFont('Comic Sans MS', 30)
-
+bg = pygame.image.load('background.png')
 
 def billboard(message, x ,y):
     text = myfont.render(message, False, (255, 255, 255))
@@ -170,38 +170,38 @@ class Wall:
     def __init__(self, pos):
         self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
         walls.append(self)
+        self.img = pygame.image.load('wall.png')
 
 
 class Weapon:
-    def __init__(self, pos, weapon_type):
+    def __init__(self, pos, color, weapon_type):
         self.rect = pygame.Rect(pos[0], pos[1], 8, 8)
         items.append(self)
         self.weapon_name = weapon_type
-
+        self.color = color
 
 
 items = []
 walls = []
 player = Player()
 running = True
-print(walls)
 level = [
 "                                    W",
 "                W                   W",
 "                W                   W",
 "                W                   W",
-"                W                   W",
+"    R           W                   W",
 "                                    W",
 "                                    W",
 "                                    W",
 "                     S              W",
 "            S                       W",
 "                                    W",
-"                              S      W",
+"                              S     W",
 "                                    W",
 "             S                      W",
 "                                    W",
-"                                    W",
+"    R               R               W",
 "                                    W",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 ]
@@ -212,7 +212,9 @@ for row in level:
         if col == 'W':
             Wall((x, y))
         if col == 'S':
-            Weapon((x, y), 'Stapler')
+            Weapon((x, y), (255, 0, 0), 'Stapler')
+        if col == 'R':
+            Weapon((x, y), (0, 255, 0), 'Ruler')
         x += 16
     y += 16
     x = 0
@@ -232,7 +234,8 @@ while running:
     screen.fill((0, 0, 0))
     for wall in walls:
         pygame.draw.rect(screen, (255, 255, 255), wall.rect)
+        screen.blit(wall.img, (wall.rect.x, wall.rect.y))
     for item in items:
-        pygame.draw.rect(screen, (255, 0, 0), item.rect)
+        pygame.draw.rect(screen, item.color, item.rect)
     player.player_update()
     pygame.display.flip()
