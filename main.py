@@ -30,6 +30,7 @@ def is_collided_with(sprite):
         if wall.colliderect(sprite):
             return True
 
+
 class Player:
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -54,44 +55,44 @@ class Player:
         self.is_walking = False
         self.steps = 0
         pygame.draw.rect(screen, (0, 0, 0), self.rect)
+        self.changey = 0
+        self.changex = 0
+
 
     def handle_keys(self):  # checks which key is pressed for movement.
         key = pygame.key.get_pressed()
+        self.collisions = pygame.sprite.spritecollide(self, walls, False)
+        self.is_walking = True
         if key[pygame.K_a]:  # key A, moves west/-x
-            if is_collided_with(self.rect):
-                self.x = self.x
-            else:
-                self.x -= self.vel
-                self.rect.move_ip(-self.vel, 0)
-                self.dir = 'west'
-                self.is_walking = True
+            self.rect.move_ip(-self.vel, 0)
+            self.changex -= self.vel
+            self.dir = 'west'
         elif key[pygame.K_d]:  # key D, moves east/+x
-            if is_collided_with(self.rect):
-                self.x = self.x
-            else:
-                self.x += self.vel
-                self.rect.move_ip(self.vel, 0)
-                self.dir = 'east'
-                self.is_walking = True
+            self.rect.move_ip(self.vel, 0)
+            self.changex += self.vel
+            self.dir = 'east'
         elif key[pygame.K_w]:  # key W, moves north/+y (for pygame its actually -y because of positioning, but whatever)
-            if is_collided_with(self.rect):
-                self.y = self.y
-            else:
-                self.y -= self.vel
-                self.rect.move_ip(0, -self.vel)
-                self.dir = 'north'
-                self.is_walking = True
+            self.rect.move_ip(0, -self.vel)
+            self.changey -= self.vel
+            self.dir = 'north'
         elif key[pygame.K_s]:  # key S, moves south/ -y (same at W)
-            if is_collided_with(self.rect):
-                self.y = self.y
-            else:
-                self.y += self.vel
-                self.rect.move_ip(0, self.vel)
-                self.dir = 'south'
-                self.is_walking = True
+            self.rect.move_ip(0, self.vel)
+            self.changey += self.vel
+            self.dir = 'south'
         else:
             self.is_walking = False
 
+        for collision in self.collisions:
+            if self.changex > 0:
+                self.rect.right = collision.rect.left
+            else:
+                self.rect.left = collision.rect.right
+            if self.changey < 0:
+                self.rect.top = collision.rect.bottom
+            else:
+                self.rect.bottom = collision.rect.top
+        self.x = self.rect.x
+        self.y = self.rect.y
     def animation(self, rotation):
         if self.steps > len(self.animg) - 1:
             self.steps = 0
@@ -129,8 +130,8 @@ class Player:
 
 class Wall:
     def __init__(self, pos):
-        self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
-        walls.append(self.rect)
+        self.rect = pygame.Rect(pos[0], pos[1], 64, 64)
+        walls.append(self)
 
 
 walls = []
@@ -183,8 +184,6 @@ while running:
         pygame.draw.rect(screen, (255, 255, 255), wall)
         pygame.draw.rect(screen, (255, 0, 0), end_rect)
 
-    if player.rect.colliderect(end_rect):
-        print("rees")
 
     # display action
     pygame.display.update()
